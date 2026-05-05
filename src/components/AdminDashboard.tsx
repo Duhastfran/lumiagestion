@@ -2,9 +2,10 @@ import React from 'react';
 import { appointmentService } from '../services/api';
 import { Appointment, AppointmentStatus } from '../types';
 import { formatTime, formatDate, cn } from '../lib/utils';
-import { Plus, Calendar as CalendarIcon, CheckCircle, Trash2, Mail } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, CheckCircle, Trash2, Mail, Lock } from 'lucide-react';
 import { format } from 'date-fns';
 import { GmailSetup } from './GmailSetup';
+import { ChangePassword } from './ChangePassword';
 
 export const AdminDashboard: React.FC = () => {
   const [appointments, setAppointments] = React.useState<Appointment[]>([]);
@@ -12,6 +13,7 @@ export const AdminDashboard: React.FC = () => {
   const [filterDate, setFilterDate] = React.useState(format(new Date(), 'yyyy-MM-dd'));
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [showGmailSetup, setShowGmailSetup] = React.useState(false);
+  const [showChangePassword, setShowChangePassword] = React.useState(false);
   
   // New slot form state
   const [newSlot, setNewSlot] = React.useState({
@@ -194,6 +196,19 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </button>
 
+        <button
+          onClick={() => setShowChangePassword(true)}
+          className="w-full flex items-center gap-3 bg-white p-4 rounded-2xl border border-border-gray hover:border-primary/40 hover:bg-primary/5 transition-colors group"
+        >
+          <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+            <Lock size={18} />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-semibold text-slate-800">Cambiar Contraseña</p>
+            <p className="text-xs text-slate-400">Actualizar la contraseña de acceso</p>
+          </div>
+        </button>
+
         <div className="bg-white p-6 rounded-2xl border border-border-gray">
           <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Ayuda de Estados</h4>
           <div className="space-y-3">
@@ -226,6 +241,19 @@ export const AdminDashboard: React.FC = () => {
               <button onClick={() => setShowGmailSetup(false)} className="text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
             </div>
             <GmailSetup onComplete={() => setShowGmailSetup(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* Change Password Modal */}
+      {showChangePassword && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold">Cambiar Contraseña</h3>
+              <button onClick={() => setShowChangePassword(false)} className="text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
+            </div>
+            <ChangePassword onComplete={() => setShowChangePassword(false)} />
           </div>
         </div>
       )}
