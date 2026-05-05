@@ -2,10 +2,12 @@ import React from 'react';
 import { appointmentService } from '../services/api';
 import { Appointment, AppointmentStatus } from '../types';
 import { formatTime, formatDate, cn } from '../lib/utils';
-import { Plus, Calendar as CalendarIcon, CheckCircle, Trash2, Mail, Lock } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, CheckCircle, Trash2, Mail, Lock, Image } from 'lucide-react';
 import { format } from 'date-fns';
 import { GmailSetup } from './GmailSetup';
 import { ChangePassword } from './ChangePassword';
+import { CreateSlotsModal } from './CreateSlotsModal';
+import { PhotoUpload } from './PhotoUpload';
 
 export const AdminDashboard: React.FC = () => {
   const [appointments, setAppointments] = React.useState<Appointment[]>([]);
@@ -14,12 +16,7 @@ export const AdminDashboard: React.FC = () => {
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [showGmailSetup, setShowGmailSetup] = React.useState(false);
   const [showChangePassword, setShowChangePassword] = React.useState(false);
-  
-  // New slot form state
-  const [newSlot, setNewSlot] = React.useState({
-    date: format(new Date(), 'yyyy-MM-dd'),
-    time: '09:00'
-  });
+  const [showPhotoUpload, setShowPhotoUpload] = React.useState(false);
 
   const loadAppointments = React.useCallback(async () => {
     setLoading(true);
@@ -56,16 +53,6 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleCreateSlot = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await appointmentService.createSlot(newSlot);
-      setShowAddModal(false);
-      loadAppointments();
-    } catch (err) {
-      alert('Error creando horario');
-    }
-  };
 
   const stats = {
     total: appointments.filter(a => a.date === filterDate).length,
@@ -184,6 +171,19 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         <button
+          onClick={() => setShowPhotoUpload(true)}
+          className="w-full flex items-center gap-3 bg-white p-4 rounded-2xl border border-border-gray hover:border-primary/40 hover:bg-primary/5 transition-colors group"
+        >
+          <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+            <Image size={18} />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-semibold text-slate-800">Foto de Perfil</p>
+            <p className="text-xs text-slate-400">Subir foto para la página de reservas</p>
+          </div>
+        </button>
+
+        <button
           onClick={() => setShowGmailSetup(true)}
           className="w-full flex items-center gap-3 bg-white p-4 rounded-2xl border border-border-gray hover:border-primary/40 hover:bg-primary/5 transition-colors group"
         >
@@ -232,6 +232,19 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
+      {/* Photo Upload Modal */}
+      {showPhotoUpload && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold">Foto de Perfil</h3>
+              <button onClick={() => setShowPhotoUpload(false)} className="text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
+            </div>
+            <PhotoUpload onComplete={() => setShowPhotoUpload(false)} />
+          </div>
+        </div>
+      )}
+
       {/* Gmail Setup Modal */}
       {showGmailSetup && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
@@ -258,48 +271,18 @@ export const AdminDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Add Modal */}
+      {/* Create Slots Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <h3 className="text-lg font-bold mb-4">Crear Nuevo Horario</h3>
-            <form onSubmit={handleCreateSlot} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Fecha</label>
-                <input 
-                  type="date"
-                  required
-                  value={newSlot.date}
-                  onChange={e => setNewSlot(prev => ({...prev, date: e.target.value}))}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Hora</label>
-                <input 
-                  type="time"
-                  required
-                  value={newSlot.time}
-                  onChange={e => setNewSlot(prev => ({...prev, time: e.target.value}))}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-              <div className="flex gap-2 pt-2">
-                <button 
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-1 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50"
-                >
-                  Cancelar
-                </button>
-                <button 
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover"
-                >
-                  Crear
-                </button>
-              </div>
-            </form>
+          <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold">Nuevo Horario</h3>
+              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
+            </div>
+            <CreateSlotsModal
+              onClose={() => setShowAddModal(false)}
+              onSuccess={() => { setShowAddModal(false); loadAppointments(); }}
+            />
           </div>
         </div>
       )}

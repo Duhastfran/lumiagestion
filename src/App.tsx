@@ -13,6 +13,7 @@ import { Appointment } from './types';
 import { format } from 'date-fns';
 import { CheckCircle2, Info } from 'lucide-react';
 import { CancelAppointment } from './components/CancelAppointment';
+import { ProfileCard } from './components/ProfileCard';
 import { motion, AnimatePresence } from 'motion/react';
 
 const PatientBooking: React.FC = () => {
@@ -81,6 +82,8 @@ const PatientBooking: React.FC = () => {
   }
 
   return (
+    <div>
+    <ProfileCard />
     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
       <div className="md:col-span-5 flex flex-col gap-6">
         <div className="bg-white rounded-2xl shadow-sm border border-border-gray p-6">
@@ -147,6 +150,7 @@ const PatientBooking: React.FC = () => {
           )}
         </AnimatePresence>
       </div>
+    </div>
     </div>
   );
 };

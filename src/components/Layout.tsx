@@ -23,7 +23,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
           <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
             <div className="w-3 h-3 bg-white rounded-full"></div>
           </div>
-          <span className="text-xl font-medium tracking-tight text-primary hidden sm:block">Lumina | Gestión Terapéutica</span>
+          <span className="text-xl font-medium tracking-tight text-primary hidden sm:block">Samanta Vargas | Psicóloga</span>
         </Link>
         <div className="flex items-center gap-4 md:gap-6">
           <div className="flex items-center gap-2">
