@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,10 +21,29 @@ serve(async (req) => {
       });
     }
 
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!;
-    const THERAPIST_EMAIL = Deno.env.get('THERAPIST_EMAIL')!;
-    const APP_URL = Deno.env.get('APP_URL')!;
-    const FROM_EMAIL = 'onboarding@resend.dev';
+    // Read Gmail credentials from settings table
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    const { data: settingsRows, error: settingsError } = await supabase
+      .from('settings')
+      .select('key, value')
+      .in('key', ['gmail_user', 'gmail_app_password']);
+
+    if (settingsError || !settingsRows || settingsRows.length < 2) {
+      return new Response(JSON.stringify({ error: 'Email no configurado. Configurá Gmail desde el panel de admin.' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const settings = Object.fromEntries(settingsRows.map(r => [r.key, r.value]));
+    const GMAIL_USER = settings['gmail_user'];
+    const GMAIL_PASS = settings['gmail_app_password'];
+    const THERAPIST_EMAIL = Deno.env.get('THERAPIST_EMAIL') ?? GMAIL_USER;
+    const APP_URL = Deno.env.get('APP_URL') ?? 'https://lumina-turnero.vercel.app';
 
     const cancelUrl = `${APP_URL}/cancelar?id=${appointmentId}`;
 
@@ -60,19 +80,26 @@ serve(async (req) => {
       </div>
     `;
 
-    const sendEmail = (toEmail: string, subject: string, html: string) =>
-      fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ from: FROM_EMAIL, to: toEmail, subject, html }),
-      });
+    // Send via Gmail SMTP using nodemailer (npm compat in Deno)
+    const nodemailer = await import('npm:nodemailer');
+    const transporter = nodemailer.default.createTransport({
+      service: 'gmail',
+      auth: { user: GMAIL_USER, pass: GMAIL_PASS },
+    });
 
     await Promise.all([
-      sendEmail(to, `Confirmación de turno — ${date} ${time}`, patientHtml),
-      sendEmail(THERAPIST_EMAIL, `Nueva reserva: ${name} — ${date} ${time}`, therapistHtml),
+      transporter.sendMail({
+        from: `"Lumina Turnero" <${GMAIL_USER}>`,
+        to,
+        subject: `Confirmación de turno — ${date} ${time}`,
+        html: patientHtml,
+      }),
+      transporter.sendMail({
+        from: `"Lumina Turnero" <${GMAIL_USER}>`,
+        to: THERAPIST_EMAIL,
+        subject: `Nueva reserva: ${name} — ${date} ${time}`,
+        html: therapistHtml,
+      }),
     ]);
 
     return new Response(JSON.stringify({ ok: true }), {

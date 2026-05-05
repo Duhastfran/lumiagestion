@@ -2,14 +2,16 @@ import React from 'react';
 import { appointmentService } from '../services/api';
 import { Appointment, AppointmentStatus } from '../types';
 import { formatTime, formatDate, cn } from '../lib/utils';
-import { MoreHorizontal, Plus, Calendar as CalendarIcon, CheckCircle, Clock, XCircle, Trash2 } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, CheckCircle, Trash2, Mail } from 'lucide-react';
 import { format } from 'date-fns';
+import { GmailSetup } from './GmailSetup';
 
 export const AdminDashboard: React.FC = () => {
   const [appointments, setAppointments] = React.useState<Appointment[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [filterDate, setFilterDate] = React.useState(format(new Date(), 'yyyy-MM-dd'));
   const [showAddModal, setShowAddModal] = React.useState(false);
+  const [showGmailSetup, setShowGmailSetup] = React.useState(false);
   
   // New slot form state
   const [newSlot, setNewSlot] = React.useState({
@@ -179,6 +181,19 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
+        <button
+          onClick={() => setShowGmailSetup(true)}
+          className="w-full flex items-center gap-3 bg-white p-4 rounded-2xl border border-border-gray hover:border-primary/40 hover:bg-primary/5 transition-colors group"
+        >
+          <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+            <Mail size={18} />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-semibold text-slate-800">Configurar Email</p>
+            <p className="text-xs text-slate-400">Conectar Gmail para enviar confirmaciones</p>
+          </div>
+        </button>
+
         <div className="bg-white p-6 rounded-2xl border border-border-gray">
           <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Ayuda de Estados</h4>
           <div className="space-y-3">
@@ -201,6 +216,19 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Gmail Setup Modal */}
+      {showGmailSetup && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold">Configurar Email</h3>
+              <button onClick={() => setShowGmailSetup(false)} className="text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
+            </div>
+            <GmailSetup onComplete={() => setShowGmailSetup(false)} />
+          </div>
+        </div>
+      )}
 
       {/* Add Modal */}
       {showAddModal && (

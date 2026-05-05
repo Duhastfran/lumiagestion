@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem \"C:\\\\Users\\\\FRANCOT\\\\.claude\\\\projects\\\\\" -Directory | Select-Object Name)",
+      "Bash(ls \"C:/Users/FRANCOT/.claude/projects/\")",
+      "Read(//c/Users/FRANCOT/.claude/projects/**)",
+      "Bash(Get-ChildItem \"C:/Users/FRANCOT/.claude/projects/c--Users-FRANCOT-Desktop-personales-lumina---gesti-n-terap-utica--1-/\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(python3 -c ' *)",
+      "Bash(node -e ' *)"
+    ]
+  }
+}
