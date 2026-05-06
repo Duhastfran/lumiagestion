@@ -43,8 +43,12 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('¿Seguro quieres eliminar este horario?')) return;
+  const handleDelete = async (id: string, status: string) => {
+    const msg = status === 'booked'
+      ? '⚠️ Este turno está RESERVADO por un paciente.\n\nSi lo eliminás, el paciente NO recibirá ninguna notificación.\n\n¿Querés eliminarlo de todas formas?'
+      : '¿Seguro querés eliminar este horario?';
+
+    if (!confirm(msg)) return;
     try {
       await appointmentService.deleteAppointment(id);
       loadAppointments();
@@ -139,7 +143,7 @@ export const AdminDashboard: React.FC = () => {
                         {apt.status === 'booked' && (
                           <button onClick={() => handleStatusChange(apt.id, 'completed')} className="p-1.5 text-slate-400 hover:text-green-600" title="Completar"><CheckCircle size={16}/></button>
                         )}
-                        <button onClick={() => handleDelete(apt.id)} className="p-1.5 text-slate-400 hover:text-red-600" title="Eliminar"><Trash2 size={16}/></button>
+                        <button onClick={() => handleDelete(apt.id, apt.status)} className="p-1.5 text-slate-400 hover:text-red-600" title="Eliminar"><Trash2 size={16}/></button>
                       </div>
                     </td>
                   </tr>

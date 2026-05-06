@@ -17,7 +17,7 @@ export const appointmentService = {
       .from('appointments')
       .select('*')
       .eq('date', date)
-      .eq('status', 'available')
+      .in('status', ['available', 'booked'])
       .order('time', { ascending: true });
 
     if (error) throw error;
