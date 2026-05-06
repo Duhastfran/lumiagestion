@@ -23,35 +23,37 @@ const PatientBooking: React.FC = () => {
   const [loadingSlots, setLoadingSlots] = React.useState(true);
   const [step, setStep] = React.useState(1); // 1: Date/Time, 2: Form, 3: Success
   const [bookingLoading, setBookingLoading] = React.useState(false);
+  const [calendarRefresh, setCalendarRefresh] = React.useState(0);
 
-  React.useEffect(() => {
-    const fetchSlots = async () => {
-      setLoadingSlots(true);
-      try {
-        const slots = await appointmentService.getAvailableSlots(format(selectedDate, 'yyyy-MM-dd'));
-        setAvailableSlots(slots);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingSlots(false);
-      }
-    };
-    fetchSlots();
+  const fetchSlots = React.useCallback(async () => {
+    setLoadingSlots(true);
+    try {
+      const slots = await appointmentService.getAvailableSlots(format(selectedDate, 'yyyy-MM-dd'));
+      setAvailableSlots(slots);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingSlots(false);
+    }
   }, [selectedDate]);
+
+  React.useEffect(() => { fetchSlots(); }, [fetchSlots]);
 
   const handleBook = async (data: BookingFormData) => {
     if (!selectedSlotId) return;
     setBookingLoading(true);
     try {
-      const booked = await appointmentService.bookAppointment(selectedSlotId, data);
+      const slot = availableSlots.find(s => s.id === selectedSlotId)!;
+      await appointmentService.bookAppointment(selectedSlotId, data);
       await emailService.sendConfirmation({
         to: data.email,
         name: data.name,
-        date: booked.date,
-        time: booked.time,
-        appointmentId: booked.id,
+        date: slot.date,
+        time: slot.time,
+        appointmentId: selectedSlotId,
       });
       setStep(3);
+      setCalendarRefresh(r => r + 1);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Error al reservar');
     } finally {
@@ -72,7 +74,7 @@ const PatientBooking: React.FC = () => {
         <h2 className="text-2xl font-bold mb-2">¡Reserva Exitosa!</h2>
         <p className="text-slate-500 mb-8">Tu turno ha sido confirmado. Te enviamos los detalles a tu email.</p>
         <button 
-          onClick={() => { setStep(1); setSelectedSlotId(null); }}
+          onClick={() => { setStep(1); setSelectedSlotId(null); fetchSlots(); }}
           className="w-full py-3 bg-primary text-white rounded-xl font-medium"
         >
           Volver al Inicio
@@ -90,9 +92,10 @@ const PatientBooking: React.FC = () => {
           <h2 className="text-lg font-semibold mb-1">Paso 1: Fecha y Hora</h2>
           <p className="text-xs text-slate-500 mb-6">Selecciona el momento ideal para tu sesión.</p>
           
-          <Calendar 
-            selectedDate={selectedDate} 
-            onDateSelect={(date) => { setSelectedDate(date); setSelectedSlotId(null); }} 
+          <Calendar
+            selectedDate={selectedDate}
+            onDateSelect={(date) => { setSelectedDate(date); setSelectedSlotId(null); }}
+            refreshTrigger={calendarRefresh}
           />
 
           <div className="mt-8">

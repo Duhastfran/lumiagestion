@@ -19,47 +19,43 @@ export const appointmentService = {
       .eq('date', date)
       .eq('status', 'available')
       .order('time', { ascending: true });
-    
+
     if (error) throw error;
     return data as Appointment[];
   },
 
   async getAllAppointments(startDate?: string, endDate?: string) {
-    let query = supabase.from('appointments').select('*').order('date', { ascending: true }).order('time', { ascending: true });
-    
+    let query = supabase
+      .from('appointments')
+      .select('*')
+      .order('date', { ascending: true })
+      .order('time', { ascending: true });
+
     if (startDate) query = query.gte('date', startDate);
     if (endDate) query = query.lte('date', endDate);
-    
+
     const { data, error } = await query;
     if (error) throw error;
     return data as Appointment[];
   },
 
   async bookAppointment(id: string, patientData: { name: string; email: string; phone?: string; notes?: string }) {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('appointments')
-      .update({
-        ...patientData,
-        status: 'booked'
-      })
+      .update({ ...patientData, status: 'booked' })
       .eq('id', id)
-      .eq('status', 'available')
-      .select();
-    
+      .eq('status', 'available');
+
     if (error) throw error;
-    if (!data || data.length === 0) throw new Error('El turno ya no está disponible');
-    return data[0] as Appointment;
   },
 
   async updateAppointmentStatus(id: string, status: AppointmentStatus) {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('appointments')
       .update({ status })
-      .eq('id', id)
-      .select();
-    
+      .eq('id', id);
+
     if (error) throw error;
-    return data[0] as Appointment;
   },
 
   async deleteAppointment(id: string) {
@@ -67,17 +63,18 @@ export const appointmentService = {
       .from('appointments')
       .delete()
       .eq('id', id);
-    
+
     if (error) throw error;
   },
 
-  async createSlot(appointment: Partial<Appointment>) {
-    const { data, error } = await supabase
+  async createSlot(slot: Partial<Appointment>) {
+    const { error } = await supabase
       .from('appointments')
-      .insert([{ ...appointment, status: 'available' }])
-      .select();
-    
-    if (error) throw error;
-    return data[0] as Appointment;
-  }
+      .insert([{ ...slot, status: 'available' }]);
+
+    if (error) {
+      if (error.code === '23505') throw new Error('DUPLICATE');
+      throw error;
+    }
+  },
 };

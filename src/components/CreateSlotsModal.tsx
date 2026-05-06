@@ -120,11 +120,22 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
     setLoading(true);
     setError('');
     try {
-      await Promise.all(slots.map(s => appointmentService.createSlot(s)));
-      setCreatedCount(slots.length);
+      const results = await Promise.allSettled(slots.map(s => appointmentService.createSlot(s)));
+      const created = results.filter(r => r.status === 'fulfilled').length;
+      const duplicates = results.filter(r => r.status === 'rejected' && (r.reason as Error).message === 'DUPLICATE').length;
+      const failed = results.filter(r => r.status === 'rejected' && (r.reason as Error).message !== 'DUPLICATE').length;
+
+      if (created === 0 && duplicates > 0) {
+        setError(`Todos los horarios ya existían (${duplicates} duplicados).`);
+        return;
+      }
+      if (failed > 0) {
+        setError(`${failed} horario(s) no se pudieron crear por un error inesperado.`);
+      }
+
+      setCreatedCount(created);
+      if (duplicates > 0) setError(`${duplicates} horario(s) ya existían y fueron omitidos.`);
       setDone(true);
-    } catch {
-      setError('Error al crear los horarios. Intentá de nuevo.');
     } finally {
       setLoading(false);
     }

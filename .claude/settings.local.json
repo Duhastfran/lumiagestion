@@ -8,7 +8,9 @@
       "Bash(Select-Object Name, PSIsContainer)",
       "Bash(python3 -c ' *)",
       "Bash(node -e ' *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "mcp__claude_ai_Supabase__execute_sql",
+      "mcp__claude_ai_Supabase__get_logs"
     ]
   }
 }

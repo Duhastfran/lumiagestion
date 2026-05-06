@@ -8,9 +8,10 @@ import { supabase } from '../lib/supabase';
 interface CalendarProps {
   selectedDate: Date;
   onDateSelect: (date: Date) => void;
+  refreshTrigger?: number;
 }
 
-export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }) => {
+export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect, refreshTrigger }) => {
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
   const [dateStatus, setDateStatus] = React.useState<Record<string, 'available' | 'full'>>({});
 
@@ -39,7 +40,7 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }
         });
         setDateStatus(result);
       });
-  }, [currentMonth]);
+  }, [currentMonth, refreshTrigger]);
 
   const days = eachDayOfInterval({
     start: startOfMonth(currentMonth),
