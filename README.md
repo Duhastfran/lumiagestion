@@ -117,10 +117,25 @@ SPA de reservas online para profesionales de la salud. Permite a pacientes elegi
 | `notes` | TEXT | Observaciones (opcional) |
 | `created_at` | TIMESTAMPTZ | Auto |
 
-**RLS recomendado:**
-- Lectura de slots `available`: pública (anon)
-- Escritura (reservar, cancelar): pública con validaciones
-- Acceso total: solo usuario autenticado (la profesional)
+**Constraint única:** `UNIQUE (date, time)` — impide cargar dos turnos en la misma fecha y hora.
+
+```sql
+ALTER TABLE appointments ADD CONSTRAINT unique_slot UNIQUE (date, time);
+```
+
+**RLS policies aplicadas:**
+
+| Policy | Rol | Operación | Condición |
+|---|---|---|---|
+| Public can view appointments | public | SELECT | `status = 'available' OR status = 'booked' OR auth.role() = 'authenticated'` |
+| Public can book appointments | public | UPDATE | using: `status = 'available'` → with check: `status = 'booked'` |
+| Public can cancel booked appointments | public | UPDATE | using: `status = 'booked'` → with check: `status = 'available'` |
+| Admin full access appointments | public | ALL | `auth.role() = 'authenticated'` |
+| anon_can_book | anon | UPDATE | using: `status = 'available'` → with check: `status = 'booked'` |
+
+```sql
+GRANT SELECT, UPDATE ON appointments TO anon;
+```
 
 ### Tabla `settings`
 
@@ -308,7 +323,9 @@ Se configuran en Supabase → Edge Functions → Secrets:
 
 ```
 [ ] Nuevo proyecto Supabase creado
-[ ] Tabla appointments creada
+[ ] Tabla appointments creada con UNIQUE (date, time)
+[ ] GRANT SELECT, UPDATE ON appointments TO anon ejecutado
+[ ] RLS policies de appointments aplicadas (select, book, cancel, admin)
 [ ] SQL create_settings_table.sql ejecutado
 [ ] SQL public_read_profile_photo.sql ejecutado
 [ ] Bucket "profile" creado en Storage (público)

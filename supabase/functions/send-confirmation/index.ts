@@ -44,7 +44,7 @@ serve(async (req) => {
     const GMAIL_USER = settings['gmail_user'];
     const GMAIL_PASS = settings['gmail_app_password'];
     const THERAPIST_EMAIL = Deno.env.get('THERAPIST_EMAIL') ?? GMAIL_USER;
-    const APP_URL = Deno.env.get('APP_URL') ?? 'https://lumina-turnero.vercel.app';
+    const APP_URL = Deno.env.get('APP_URL') ?? 'https://samantavargas.vercel.app';
 
     const cancelUrl = `${APP_URL}/cancelar?id=${appointmentId}`;
 
@@ -90,13 +90,13 @@ serve(async (req) => {
 
     await Promise.all([
       transporter.sendMail({
-        from: `"Lumina Turnero" <${GMAIL_USER}>`,
+        from: `"Samanta Vargas" <${GMAIL_USER}>`,
         to,
         subject: `Confirmación de turno — ${date} ${time}`,
         html: patientHtml,
       }),
       transporter.sendMail({
-        from: `"Lumina Turnero" <${GMAIL_USER}>`,
+        from: `"Samanta Vargas" <${GMAIL_USER}>`,
         to: THERAPIST_EMAIL,
         subject: `Nueva reserva: ${name} — ${date} ${time}`,
         html: therapistHtml,
