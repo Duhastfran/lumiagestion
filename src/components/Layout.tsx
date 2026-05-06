@@ -8,8 +8,20 @@ interface LayoutProps {
   user: User | null;
 }
 
+const useClock = () => {
+  const [now, setNow] = React.useState(new Date());
+  React.useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const dia = now.toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' });
+  const hora = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return `${dia} · ${hora}`;
+};
+
 export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
   const navigate = useNavigate();
+  const clock = useClock();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -26,6 +38,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
           <span className="text-xl font-medium tracking-tight text-primary hidden sm:block">Samanta Vargas | Psicóloga</span>
         </Link>
         <div className="flex items-center gap-4 md:gap-6">
+          <span className="text-xs font-mono text-slate-400 hidden md:inline">{clock}</span>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-slate-400">Supabase Live</span>
