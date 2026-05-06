@@ -87,8 +87,8 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }
                 isPast && 'text-slate-200 cursor-not-allowed',
                 !isCurrentMonth && 'text-slate-200',
                 !isSelected && !isPast && isCurrentMonth && !status && 'hover:bg-slate-100',
-                !isSelected && !isPast && status === 'available' && 'bg-green-50 text-green-700 hover:bg-green-100',
-                !isSelected && !isPast && status === 'full' && 'bg-red-50 text-red-400 cursor-not-allowed',
+                !isSelected && !isPast && status === 'available' && 'bg-green-200 text-green-800 font-semibold hover:bg-green-300',
+                !isSelected && !isPast && status === 'full' && 'bg-red-200 text-red-700 font-semibold cursor-not-allowed',
                 isSelected && 'bg-primary text-white font-bold ring-2 ring-primary ring-offset-1',
               )}
               style={idx === 0 ? { gridColumnStart: (day.getDay() === 0 ? 7 : day.getDay()) } : {}}
@@ -105,11 +105,11 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }
       {/* Leyenda */}
       <div className="flex items-center gap-4 mt-4">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-green-50 border border-green-200" />
+          <div className="w-3 h-3 rounded bg-green-200" />
           <span className="text-[10px] text-slate-400">Disponible</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-red-50 border border-red-200" />
+          <div className="w-3 h-3 rounded bg-red-200" />
           <span className="text-[10px] text-slate-400">Completo</span>
         </div>
       </div>
