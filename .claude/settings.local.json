@@ -7,7 +7,8 @@
       "Bash(Get-ChildItem \"C:/Users/FRANCOT/.claude/projects/c--Users-FRANCOT-Desktop-personales-lumina---gesti-n-terap-utica--1-/\" -Force)",
       "Bash(Select-Object Name, PSIsContainer)",
       "Bash(python3 -c ' *)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(npx tsc *)"
     ]
   }
 }

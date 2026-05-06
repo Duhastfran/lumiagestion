@@ -179,7 +179,7 @@ export const AdminDashboard: React.FC = () => {
           </div>
           <div className="text-left">
             <p className="text-sm font-semibold text-slate-800">Foto de Perfil</p>
-            <p className="text-xs text-slate-400">Subir foto para la página de reservas</p>
+            <p className="text-xs text-slate-400">Subir foto de perfil</p>
           </div>
         </button>
 
@@ -214,7 +214,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="space-y-3">
             <div className="flex items-center gap-3 text-sm">
               <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              <span className="text-slate-600">Disponible: listo para reserva pública.</span>
+              <span className="text-slate-600">Disponible: listo para reservar.</span>
             </div>
             <div className="flex items-center gap-3 text-sm">
               <div className="w-2 h-2 rounded-full bg-blue-500"></div>

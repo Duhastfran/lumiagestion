@@ -3,6 +3,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSam
 import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { supabase } from '../lib/supabase';
 
 interface CalendarProps {
   selectedDate: Date;
@@ -11,7 +12,35 @@ interface CalendarProps {
 
 export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }) => {
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
-  
+  const [dateStatus, setDateStatus] = React.useState<Record<string, 'available' | 'full'>>({});
+
+  const today = startOfToday();
+
+  React.useEffect(() => {
+    const from = format(startOfMonth(currentMonth), 'yyyy-MM-dd');
+    const to = format(endOfMonth(currentMonth), 'yyyy-MM-dd');
+
+    supabase
+      .from('appointments')
+      .select('date, status')
+      .gte('date', from)
+      .lte('date', to)
+      .then(({ data }) => {
+        if (!data) return;
+        const grouped: Record<string, { total: number; available: number }> = {};
+        data.forEach(({ date, status }) => {
+          if (!grouped[date]) grouped[date] = { total: 0, available: 0 };
+          grouped[date].total++;
+          if (status === 'available') grouped[date].available++;
+        });
+        const result: Record<string, 'available' | 'full'> = {};
+        Object.entries(grouped).forEach(([date, { available }]) => {
+          result[date] = available > 0 ? 'available' : 'full';
+        });
+        setDateStatus(result);
+      });
+  }, [currentMonth]);
+
   const days = eachDayOfInterval({
     start: startOfMonth(currentMonth),
     end: endOfMonth(currentMonth),
@@ -19,8 +48,6 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
-
-  const today = startOfToday();
 
   return (
     <div className="w-full">
@@ -47,6 +74,8 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }
           const isSelected = isSameDay(day, selectedDate);
           const isPast = isBefore(day, today);
           const isCurrentMonth = isSameMonth(day, currentMonth);
+          const isToday = isSameDay(day, today);
+          const status = dateStatus[format(day, 'yyyy-MM-dd')];
 
           return (
             <button
@@ -54,21 +83,35 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }
               onClick={() => !isPast && onDateSelect(day)}
               disabled={isPast}
               className={cn(
-                "py-2 text-sm rounded-lg transition-all relative group",
-                !isCurrentMonth && "text-slate-200",
-                isPast && "text-slate-200 cursor-not-allowed",
-                !isSelected && !isPast && isCurrentMonth && "hover:bg-slate-100",
-                isSelected && "bg-primary text-white font-bold"
+                'py-2 text-sm rounded-lg transition-all relative font-medium',
+                isPast && 'text-slate-200 cursor-not-allowed',
+                !isCurrentMonth && 'text-slate-200',
+                !isSelected && !isPast && isCurrentMonth && !status && 'hover:bg-slate-100',
+                !isSelected && !isPast && status === 'available' && 'bg-green-50 text-green-700 hover:bg-green-100',
+                !isSelected && !isPast && status === 'full' && 'bg-red-50 text-red-400 cursor-not-allowed',
+                isSelected && 'bg-primary text-white font-bold ring-2 ring-primary ring-offset-1',
               )}
               style={idx === 0 ? { gridColumnStart: (day.getDay() === 0 ? 7 : day.getDay()) } : {}}
             >
               {format(day, 'd')}
-              {isSameDay(day, today) && !isSelected && (
-                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"></div>
+              {isToday && !isSelected && (
+                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
               )}
             </button>
           );
         })}
+      </div>
+
+      {/* Leyenda */}
+      <div className="flex items-center gap-4 mt-4">
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-green-50 border border-green-200" />
+          <span className="text-[10px] text-slate-400">Disponible</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded bg-red-50 border border-red-200" />
+          <span className="text-[10px] text-slate-400">Completo</span>
+        </div>
       </div>
     </div>
   );
