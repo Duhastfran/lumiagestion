@@ -77,20 +77,20 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }
           const isToday = isSameDay(day, today);
           const status = dateStatus[format(day, 'yyyy-MM-dd')];
 
+          const dayClass = (() => {
+            if (isSelected) return 'bg-primary text-white font-bold ring-2 ring-primary ring-offset-1';
+            if (isPast || !isCurrentMonth) return 'text-slate-200 cursor-not-allowed';
+            if (status === 'available') return 'bg-green-200 text-green-800 font-semibold hover:bg-green-300';
+            if (status === 'full') return 'bg-red-200 text-red-700 font-semibold cursor-not-allowed';
+            return 'hover:bg-slate-100';
+          })();
+
           return (
             <button
               key={day.toString()}
-              onClick={() => !isPast && onDateSelect(day)}
-              disabled={isPast}
-              className={cn(
-                'py-2 text-sm rounded-lg transition-all relative font-medium',
-                isPast && 'text-slate-200 cursor-not-allowed',
-                !isCurrentMonth && 'text-slate-200',
-                !isSelected && !isPast && isCurrentMonth && !status && 'hover:bg-slate-100',
-                !isSelected && !isPast && status === 'available' && 'bg-green-200 text-green-800 font-semibold hover:bg-green-300',
-                !isSelected && !isPast && status === 'full' && 'bg-red-200 text-red-700 font-semibold cursor-not-allowed',
-                isSelected && 'bg-primary text-white font-bold ring-2 ring-primary ring-offset-1',
-              )}
+              onClick={() => !isPast && status !== 'full' && onDateSelect(day)}
+              disabled={isPast || status === 'full'}
+              className={cn('py-2 text-sm rounded-lg transition-all relative', dayClass)}
               style={idx === 0 ? { gridColumnStart: (day.getDay() === 0 ? 7 : day.getDay()) } : {}}
             >
               {format(day, 'd')}
